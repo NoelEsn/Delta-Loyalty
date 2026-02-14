@@ -7,6 +7,17 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   try {
+    // Prevent execution during static generation
+    if (process.env.NODE_ENV === 'production' && !request.headers.get('user-agent')?.includes('curl')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Seed endpoint is read-only during production builds',
+        },
+        { status: 503 }
+      )
+    }
+
     console.log('🌱 Seeding database...')
 
     // Check if admin already exists
@@ -77,5 +88,7 @@ export async function GET(request: NextRequest) {
       },
       { status: 500 }
     )
+  } finally {
+    // Always disconnect to prevent connection pool issues during build
+    await prisma.$disconnect()
   }
-}

@@ -276,5 +276,13 @@ export async function GET(request: NextRequest) {
       },
       { status: 500 }
     )
+  } finally {
+    // Always disconnect to prevent connection pool issues during build
+    try {
+      sqliteDb.close()
+    } catch (e) {
+      // ignore
+    }
+    await prisma.$disconnect()
   }
 }
