@@ -7,6 +7,8 @@ import * as path from 'path'
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
+  let sqliteDb: any = null
+
   try {
     console.log('🚀 Starting migration from SQLite to PostgreSQL...\n')
 
@@ -40,7 +42,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const sqliteDb = new Database(dbPath)
+    sqliteDb = new Database(dbPath)
 
     // Read all data from SQLite
     const users = sqliteDb.prepare('SELECT * FROM users').all() as any[]
@@ -251,8 +253,6 @@ export async function GET(request: NextRequest) {
       }
     }
     console.log(`✅ ${referralsMigratedCount} referrals migrated\n`)
-
-    sqliteDb.close()
 
     return NextResponse.json({
       success: true,
