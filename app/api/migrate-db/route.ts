@@ -3,6 +3,9 @@ import { prisma } from '@/lib/db'
 import * as fs from 'fs'
 import * as path from 'path'
 
+// Prevent this route from being rendered statically
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
     console.log('🚀 Starting migration from SQLite to PostgreSQL...\n')
