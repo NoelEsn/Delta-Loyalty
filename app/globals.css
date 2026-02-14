@@ -1,0 +1,182 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  border-color: #000000;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-display), sans-serif;
+  background-color: #F2F2F2;
+  color: #000000;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Grainy background overlay */
+.grainy-bg {
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" result="noise" /></filter><rect width="100" height="100" fill="rgba(0,0,0,0.1)" filter="url(%23noise)" /></svg>');
+  background-blend-mode: overlay;
+  opacity: 0.05;
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+}
+
+a {
+  @apply transition-colors;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  @apply w-2;
+}
+
+::-webkit-scrollbar-track {
+  background-color: #F2F2F2;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #d1d5db;
+  border-radius: 0.25rem;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #9ca3af;
+}
+
+/* Metallic gradients */
+@layer components {
+  .metallic-bronze {
+    @apply rounded-full;
+    background: linear-gradient(135deg, #a87e51 0%, #4e3524 100%);
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+  }
+
+  .metallic-silver {
+    @apply rounded-full;
+    background: linear-gradient(135deg, #d1d5db 0%, #6b7280 100%);
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+  }
+
+  .metallic-gold {
+    @apply rounded-full;
+    background: linear-gradient(135deg, #fbbf24 0%, #b86614 100%);
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+  }
+
+  .metallic-diamond {
+    @apply rounded-full;
+    background: linear-gradient(135deg, #e8e8e8 0%, #a8a8a8 100%);
+    box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.3), inset 0 0 10px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Brutalist cards */
+  .brutalist-card {
+    background-color: #0A0A0A;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .brutalist-card-light {
+    background-color: #F9F9F9;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  /* Matte card */
+  .matte-card {
+    background-color: #0A0A0A;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Grid pattern background */
+  .grid-pattern {
+    background-image: url("data:image/svg+xml,%3Csvg width='30' height='30' viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M 30 0 L 0 0 0 30' fill='none' stroke='white' stroke-width='0.5'/%3E%3C/svg%3E");
+    background-size: 30px 30px;
+    opacity: 0.05;
+  }
+
+  /* Typography utilities */
+  .text-uppercase-tight {
+    @apply uppercase tracking-tight font-black;
+  }
+
+  .text-uppercase-widest {
+    @apply uppercase tracking-widest font-black;
+  }
+
+  /* Layout utilities */
+  .card {
+    background-color: #1a1f2e;
+    border: 1px solid #374151;
+    border-radius: 0.5rem;
+  }
+
+  .card-elevated {
+    @apply card shadow-lg;
+  }
+
+  .btn-primary {
+    @apply px-4 py-2 font-semibold rounded-lg transition-colors;
+    background-color: #d4af37;
+    color: #111827;
+  }
+
+  .btn-primary:hover {
+    background-color: #fcd34d;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 font-semibold rounded-lg transition-colors;
+    background-color: #374151;
+    color: #f3f4f6;
+  }
+
+  .btn-secondary:hover {
+    background-color: #4b5563;
+  }
+
+  .input-field {
+    @apply px-3 py-2 rounded-lg focus:outline-none;
+    background-color: #1f2937;
+    border: 1px solid #374151;
+    color: #f3f4f6;
+  }
+
+  .input-field::placeholder {
+    color: #9ca3af;
+  }
+
+  .input-field:focus {
+    border-color: #d4af37;
+    box-shadow: 0 0 0 1px #d4af37;
+  }
+
+  .grid-3 {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
+  }
+
+  .container-main {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Portrait frame for Hall of Fame */
+  .portrait-frame {
+    @apply border-[3px] border-black transition-transform duration-300;
+  }
+
+  /* Thin divider */
+  .thin-divider {
+    @apply border-b border-black;
+  }
+
+  /* Percentile badge */
+  .percentile-badge {
+    @apply bg-black text-white font-bold uppercase tracking-tighter text-xs px-1.5 py-0.5;
+  }
+}

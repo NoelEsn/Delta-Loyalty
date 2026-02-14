@@ -1,0 +1,166 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(cuid())
+  name      String
+  email     String     @unique
+  password_hash  String
+  role      String     @default("MEMBER")  // ADMIN or MEMBER
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  
+  // If this user is a member, link to member profile
+  member    Member?
+  
+  @@map("users")
+}
+
+model Member {
+  id                  String     @id @default(cuid())
+  userId              String     @unique
+  user                User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Member info
+  memberNumber        String     @unique
+  
+  // Computed metrics (updated after each admin action)
+  totalSpent          Float      @default(0)
+  eventsCount         Int        @default(0)
+  referralsCount      Int        @default(0)
+  
+  // Pin levels (0 = locked, 1 = bronze, 2 = silver, 3 = gold)
+  clientLevel         Int        @default(0)  // Spending axis
+  eventLevel          Int        @default(0)  // Events axis
+  ambassadorLevel     Int        @default(0)  // Referrals axis
+  
+  // Computed total pins (0-9)
+  totalPins           Int        @default(0)
+  
+  // Diamond pin (10th pin)
+  isDiamond           Boolean    @default(false)
+  diamondUnlockedAt   DateTime?
+  
+  // Hall of fame
+  hallOfFamePhotoUrl  String?
+  
+  // Relations
+  purchases           Purchase[]
+  eventParticipations EventParticipation[]
+  referralsGiven      Referral[] @relation("referrer")
+  referralsReceived   Referral[] @relation("referred")
+  
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+  
+  @@map("members")
+}
+
+model Purchase {
+  id          String   @id @default(cuid())
+  memberId    String
+  member      Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  
+  amount      Float
+  date        DateTime
+  note        String?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([memberId])
+  @@map("purchases")
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  name        String
+  date        DateTime
+  
+  participations  EventParticipation[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("events")
+}
+
+model EventParticipation {
+  id          String   @id @default(cuid())
+  memberId    String
+  member      Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  
+  eventId     String
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  
+  checkinDate DateTime
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([memberId, eventId])
+  @@index([memberId])
+  @@index([eventId])
+  @@map("event_participations")
+}
+
+model Referral {
+  id              String   @id @default(cuid())
+  referrerId      String
+  referrer        Member   @relation("referrer", fields: [referrerId], references: [id], onDelete: Cascade)
+  
+  referredMemberId String
+  referredMember   Member   @relation("referred", fields: [referredMemberId], references: [id], onDelete: Cascade)
+  
+  date            DateTime
+  status          String   @default("ACTIVE")  // ACTIVE, PENDING, COMPLETED, REVOKED
+  adminNote       String?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@unique([referrerId, referredMemberId])
+  @@index([referrerId])
+  @@index([referredMemberId])
+  @@map("referrals")
+}
+
+model Pin {
+  id              String   @id @default(cuid())
+  
+  // Pin metadata
+  axis            String   // "spending", "events", "referrals"
+  level           Int      // 1, 2, or 3 (bronze, silver, gold)
+  label           String   // e.g., "Client Bronze"
+  icon            String   // Material Symbols icon name
+  metallic        String   // "bronze", "silver", "gold"
+  
+  // Badge image path (stored without /public prefix)
+  imageUrl        String?  // e.g., "/badges/clients/badge-client-bronze.jpg"
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@unique([axis, level])
+  @@map("pins")
+}
+
+model GlobalSettings {
+  id                      String   @id @default(cuid())
+  hallOfFameActive        Boolean  @default(false)
+  hallOfFameActivatedAt   DateTime?
+  
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+  
+  @@map("global_settings")
+}
