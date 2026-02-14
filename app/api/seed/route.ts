@@ -92,3 +92,4 @@ export async function GET(request: NextRequest) {
     // Always disconnect to prevent connection pool issues during build
     await prisma.$disconnect()
   }
+}
