@@ -57,8 +57,11 @@ export async function GET(request: NextRequest) {
     console.log('✍️  Writing to PostgreSQL (Supabase)...\n')
 
     let migrated = 0
+    let usersMigratedCount = 0
+    let membersMigratedCount = 0
 
-    // Migrate users
+    // Migrate users FIRST
+    console.log('👥 Migrating users...')
     for (const user of users) {
       try {
         await prisma.user.upsert({
@@ -79,52 +82,65 @@ export async function GET(request: NextRequest) {
             updatedAt: user.updatedAt ? new Date(user.updatedAt) : new Date(),
           },
         })
-        migrated++
+        usersMigratedCount++
       } catch (err) {
-        console.warn(`⚠️  User ${user.email} skipped`)
+        console.warn(`⚠️  User ${user.email} skipped`, err instanceof Error ? err.message : '')
       }
     }
-    console.log(`✅ ${users.length} users migrated`)
+    console.log(`✅ ${usersMigratedCount} users migrated\n`)
 
-    // Migrate members
+    // Migrate members AFTER users exist
+    console.log('👤 Migrating members...')
     for (const member of members) {
       try {
+        // Verify the user exists in PostgreSQL
+        const userExists = await prisma.user.findUnique({
+          where: { id: member.userId },
+        })
+
+        if (!userExists) {
+          console.warn(`⚠️  Member ${member.memberNumber} skipped - userId ${member.userId} not found`)
+          continue
+        }
+
         await prisma.member.upsert({
           where: { memberNumber: member.memberNumber },
           update: {
-            totalSpent: member.totalSpent,
-            eventsCount: member.eventsCount,
-            referralsCount: member.referralsCount,
-            clientLevel: member.clientLevel,
-            eventLevel: member.eventLevel,
-            ambassadorLevel: member.ambassadorLevel,
-            totalPins: member.totalPins,
+            totalSpent: parseFloat(member.totalSpent) || 0,
+            eventsCount: parseInt(member.eventsCount) || 0,
+            referralsCount: parseInt(member.referralsCount) || 0,
+            clientLevel: parseInt(member.clientLevel) || 0,
+            eventLevel: parseInt(member.eventLevel) || 0,
+            ambassadorLevel: parseInt(member.ambassadorLevel) || 0,
+            totalPins: parseInt(member.totalPins) || 0,
             isDiamond: member.isDiamond === 1 || member.isDiamond === true,
           },
           create: {
             id: member.id,
             userId: member.userId,
             memberNumber: member.memberNumber,
-            totalSpent: member.totalSpent,
-            eventsCount: member.eventsCount,
-            referralsCount: member.referralsCount,
-            clientLevel: member.clientLevel,
-            eventLevel: member.eventLevel,
-            ambassadorLevel: member.ambassadorLevel,
-            totalPins: member.totalPins,
+            totalSpent: parseFloat(member.totalSpent) || 0,
+            eventsCount: parseInt(member.eventsCount) || 0,
+            referralsCount: parseInt(member.referralsCount) || 0,
+            clientLevel: parseInt(member.clientLevel) || 0,
+            eventLevel: parseInt(member.eventLevel) || 0,
+            ambassadorLevel: parseInt(member.ambassadorLevel) || 0,
+            totalPins: parseInt(member.totalPins) || 0,
             isDiamond: member.isDiamond === 1 || member.isDiamond === true,
             createdAt: member.createdAt ? new Date(member.createdAt) : new Date(),
             updatedAt: member.updatedAt ? new Date(member.updatedAt) : new Date(),
           },
         })
-        migrated++
+        membersMigratedCount++
       } catch (err) {
-        console.warn(`⚠️  Member ${member.memberNumber} skipped`)
+        console.warn(`⚠️  Member ${member.memberNumber} skipped`, err instanceof Error ? err.message : '')
       }
     }
-    console.log(`✅ ${members.length} members migrated`)
+    console.log(`✅ ${membersMigratedCount} members migrated\n`)
 
     // Migrate events
+    console.log('📅 Migrating events...')
+    let eventsMigratedCount = 0
     for (const event of events) {
       try {
         await prisma.event.upsert({
@@ -140,43 +156,74 @@ export async function GET(request: NextRequest) {
             updatedAt: event.updatedAt ? new Date(event.updatedAt) : new Date(),
           },
         })
-        migrated++
+        eventsMigratedCount++
       } catch (err) {
-        console.warn(`⚠️  Event ${event.id} skipped`)
+        console.warn(`⚠️  Event ${event.id} skipped`, err instanceof Error ? err.message : '')
       }
     }
-    console.log(`✅ ${events.length} events migrated`)
+    console.log(`✅ ${eventsMigratedCount} events migrated\n`)
 
     // Migrate purchases
+    console.log('💳 Migrating purchases...')
+    let purchasesMigratedCount = 0
     for (const purchase of purchases) {
       try {
+        const memberExists = await prisma.member.findUnique({
+          where: { id: purchase.memberId },
+        })
+
+        if (!memberExists) {
+          console.warn(`⚠️  Purchase ${purchase.id} skipped - memberId ${purchase.memberId} not found`)
+          continue
+        }
+
         await prisma.purchase.upsert({
           where: { id: purchase.id },
           update: {
-            amount: purchase.amount,
+            amount: parseFloat(purchase.amount) || 0,
             date: purchase.date ? new Date(purchase.date) : new Date(),
             note: purchase.note,
           },
           create: {
             id: purchase.id,
             memberId: purchase.memberId,
-            amount: purchase.amount,
+            amount: parseFloat(purchase.amount) || 0,
             date: purchase.date ? new Date(purchase.date) : new Date(),
             note: purchase.note,
             createdAt: purchase.createdAt ? new Date(purchase.createdAt) : new Date(),
             updatedAt: purchase.updatedAt ? new Date(purchase.updatedAt) : new Date(),
           },
         })
-        migrated++
+        purchasesMigratedCount++
       } catch (err) {
-        console.warn(`⚠️  Purchase ${purchase.id} skipped`)
+        console.warn(`⚠️  Purchase ${purchase.id} skipped`, err instanceof Error ? err.message : '')
       }
     }
-    console.log(`✅ ${purchases.length} purchases migrated`)
+    console.log(`✅ ${purchasesMigratedCount} purchases migrated\n`)
 
     // Migrate referrals
+    console.log('🎯 Migrating referrals...')
+    let referralsMigratedCount = 0
     for (const referral of referrals) {
       try {
+        const referrerExists = await prisma.member.findUnique({
+          where: { id: referral.referrerId },
+        })
+
+        const referredExists = await prisma.member.findUnique({
+          where: { id: referral.referredMemberId },
+        })
+
+        if (!referrerExists) {
+          console.warn(`⚠️  Referral ${referral.id} skipped - referrerId ${referral.referrerId} not found`)
+          continue
+        }
+
+        if (!referredExists) {
+          console.warn(`⚠️  Referral ${referral.id} skipped - referredMemberId ${referral.referredMemberId} not found`)
+          continue
+        }
+
         await prisma.referral.upsert({
           where: { id: referral.id },
           update: {
@@ -195,12 +242,12 @@ export async function GET(request: NextRequest) {
             updatedAt: referral.updatedAt ? new Date(referral.updatedAt) : new Date(),
           },
         })
-        migrated++
+        referralsMigratedCount++
       } catch (err) {
-        console.warn(`⚠️  Referral ${referral.id} skipped`)
+        console.warn(`⚠️  Referral ${referral.id} skipped`, err instanceof Error ? err.message : '')
       }
     }
-    console.log(`✅ ${referrals.length} referrals migrated`)
+    console.log(`✅ ${referralsMigratedCount} referrals migrated\n`)
 
     sqliteDb.close()
 
@@ -208,12 +255,12 @@ export async function GET(request: NextRequest) {
       success: true,
       message: '🎉 Migration completed successfully!',
       data: {
-        users_migrated: users.length,
-        members_migrated: members.length,
-        events_migrated: events.length,
-        purchases_migrated: purchases.length,
-        referrals_migrated: referrals.length,
-        total_records: migrated,
+        users_migrated: usersMigratedCount,
+        members_migrated: membersMigratedCount,
+        events_migrated: eventsMigratedCount,
+        purchases_migrated: purchasesMigratedCount,
+        referrals_migrated: referralsMigratedCount,
+        total_records: usersMigratedCount + membersMigratedCount + eventsMigratedCount + purchasesMigratedCount + referralsMigratedCount,
       },
     })
   } catch (error) {
