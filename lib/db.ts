@@ -10,7 +10,12 @@ export const prisma =
     log: [],
   })
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+if (process.env.NODE_ENV !== 'production') {
+  globalForPrisma.prisma = prisma
+} else {
+  // In production, also cache to avoid connection pool exhaustion
+  globalForPrisma.prisma = prisma
+}
 
 /**
  * Generate unique member number
