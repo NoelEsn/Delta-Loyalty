@@ -232,7 +232,7 @@ export async function GET(request: NextRequest) {
           update: {
             date: referral.date ? new Date(referral.date) : new Date(),
             status: referral.status,
-            note: referral.note,
+            adminNote: referral.note,
           },
           create: {
             id: referral.id,
@@ -240,7 +240,7 @@ export async function GET(request: NextRequest) {
             referredMemberId: referral.referredMemberId,
             date: referral.date ? new Date(referral.date) : new Date(),
             status: referral.status,
-            note: referral.note,
+            adminNote: referral.note,
             createdAt: referral.createdAt ? new Date(referral.createdAt) : new Date(),
             updatedAt: referral.updatedAt ? new Date(referral.updatedAt) : new Date(),
           },
