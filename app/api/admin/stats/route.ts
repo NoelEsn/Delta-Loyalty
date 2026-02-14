@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/db';
 import { cookies } from 'next/headers';
 import { isDiamondEligible, determinePinLevels } from '@/lib/pinEngine';
-
-const prisma = new PrismaClient();
 
 function getSessionFromCookie(cookieStr: string | null) {
   if (!cookieStr) return null;
