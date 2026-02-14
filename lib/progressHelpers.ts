@@ -12,6 +12,22 @@ export function getCurrentLevel(value: number, vertical: VerticalConfig): number
 }
 
 /**
+ * Get the next level to reach based on current value
+ * Returns the level number of the next milestone (1, 2, 3)
+ */
+export function getNextLevel(value: number, vertical: VerticalConfig): number {
+  const currentLevel = getCurrentLevel(value, vertical)
+  const nextLevelConfig = vertical.levels.find((l) => l.level === currentLevel + 1)
+  
+  // If at max level or not started, return next level or max
+  if (!nextLevelConfig) {
+    return 3 // Max level
+  }
+  
+  return nextLevelConfig.level
+}
+
+/**
  * Get the level config for a specific level
  */
 export function getLevelConfig(level: number, vertical: VerticalConfig): LevelConfig | null {
