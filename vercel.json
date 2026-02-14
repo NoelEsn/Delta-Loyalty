@@ -1,0 +1,6 @@
+{
+  "buildCommand": "prisma generate && next build",
+  "env": {
+    "PRISMA_SKIP_VALIDATION_WARNING": "true"
+  }
+}
